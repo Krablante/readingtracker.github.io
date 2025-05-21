@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Reading Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Reading Tracker</h1>
+      <button id="theme-btn" class="theme-btn" aria-label="Toggle theme">🌙</button>
+    </div>
+    <form id="entry-form">
+      <div class="field-group">
+        <label for="date" class="visually-hidden">Date</label>
+        <input type="date" id="date" required aria-hidden="true" hidden>
+        <button type="button" id="date-btn" class="date-btn" aria-label="Select date">📅</button>
+      </div>
+      <div class="field-group flex-grow">
+        <label for="title" class="visually-hidden">Title</label>
+        <input type="text" id="title" class="title-input" placeholder="Book or article title" required>
+      </div>
+      <button type="submit" class="submit-btn" aria-label="Add entry">A</button>
+    </form>
+    <ul id="entries"></ul>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
