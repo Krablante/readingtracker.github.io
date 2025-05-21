@@ -131,7 +131,7 @@ form.addEventListener("submit", async (e) => {
     date: entryDate, 
     title: titleInput.value 
   };
-  window.saveToLocal(entry);
+  // window.saveToLocal(entry);
 
   // если пользователь залогинен — пушим в Firestore
   if (auth.currentUser) {

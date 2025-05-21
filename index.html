@@ -76,11 +76,12 @@
         signInWithPopup(auth, provider);
       }
     });
+
     signOutBtn.addEventListener('click', async () => {
-      // записываем текущие entries (они уже синхронизированы из Firestore)
-      localStorage.setItem('entries', JSON.stringify(entries));
-      // сбрасываем флаг миграции, чтобы при следующем входе мы снова слить облако в локал (по желанию)
-      localStorage.removeItem('migratedToFirebase');
+      // // записываем текущие entries (они уже синхронизированы из Firestore)
+      // localStorage.setItem('entries', JSON.stringify(entries));
+      // // сбрасываем флаг миграции, чтобы при следующем входе мы снова слить облако в локал (по желанию)
+      // localStorage.removeItem('migratedToFirebase');
 
       // теперь разлогиниваем
       await signOut(auth);
@@ -92,8 +93,8 @@
         avatarImg.src = user.photoURL;
 
         // --- Всегда мигрируем локальные записи при каждом логине ---
-        const localEntries = JSON.parse(localStorage.getItem('entries') || '[]');
-        if (localEntries.length > 0) {
+        //const localEntries = JSON.parse(localStorage.getItem('entries') || '[]');
+        /*if (localEntries.length > 0) {
           console.log('[Migration] migrating', localEntries.length, 'entries');
           try {
             // Параллельно заливаем все записи
@@ -112,7 +113,7 @@
           }
           // После заливки избавляемся от локала
           localStorage.removeItem('entries');
-        }
+        }*/
 
         // Потом уже подключаем слушатель Firestore
         loadFromFirestore(user.uid);
