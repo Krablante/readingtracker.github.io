@@ -39,6 +39,10 @@ body {
   align-items: center;
   justify-content: space-between;
 }
+.header-controls {
+  display: flex;
+  align-items: center;
+}
 h1 {
   margin: 0;
 }
@@ -143,6 +147,32 @@ form {
 }
 .delete-btn:hover { color: #e74c3c; }
 
+/* User icon */
+.user-icon {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin-left: 0.5rem;
+  position: relative;
+  cursor: pointer;
+}
+.user-icon img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 40px;
+  background: var(--card-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  box-shadow: 0 2px 5px var(--card-shadow);
+  padding: 0.5rem;
+}
 /* Responsive adjustments */
 @media (max-width: 480px) {
   form {

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -8,11 +9,20 @@
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <div class="container">
     <div class="header">
       <h1>Reading Tracker</h1>
-      <button id="theme-btn" class="theme-btn" aria-label="Toggle theme">🌙</button>
+      <div class="header-controls">
+        <button id="theme-btn" class="theme-btn" aria-label="Toggle theme">🌙</button>
+        <button id="user-btn" class="user-icon" aria-label="User menu">
+          <img id="user-avatar" src="default-U-icon.svg" alt="User-avatar">
+        </button>
+        <div id="user-menu" class="dropdown">
+          <button id="sign-out">Выйти</button>
+        </div>
+      </div>
     </div>
     <form id="entry-form" autocomplete="off">
       <div class="field-group">
@@ -22,12 +32,130 @@
       </div>
       <div class="field-group flex-grow">
         <label for="title" class="visually-hidden">Title</label>
-        <input type="text" id="title" class="title-input" placeholder="Book or article title" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <input type="text" id="title" class="title-input" placeholder="Book or article title" required
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       </div>
       <button type="submit" class="submit-btn" aria-label="Add entry">A</button>
     </form>
     <ul id="entries"></ul>
   </div>
   <script src="app.js"></script>
+  <script type="module">
+    //import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut }
+      from "https://www.gstatic.com/firebasejs/11.8.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc }
+      from "https://www.gstatic.com/firebasejs/11.8.0/firebase-firestore.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAltyqMEHW5lF--Z5rDQ_MO5wu8bnajRGY",
+      authDomain: "reading-tracker-288c8.firebaseapp.com",
+      projectId: "reading-tracker-288c8",
+      storageBucket: "reading-tracker-288c8.firebasestorage.app",
+      messagingSenderId: "967353871167",
+      appId: "1:967353871167:web:b5fc7eaa410aa4a9a7818a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    window.auth = auth;
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    // DOM elements
+    const userBtn = document.getElementById('user-btn');
+    const avatarImg = document.getElementById('user-avatar');
+    const signOutBtn = document.getElementById('sign-out');
+
+    userBtn.addEventListener('click', () => {
+      if (auth.currentUser) {
+        signOut(auth);
+      } else {
+        signInWithPopup(auth, provider);
+      }
+    });
+    signOutBtn.addEventListener('click', async () => {
+      // записываем текущие entries (они уже синхронизированы из Firestore)
+      localStorage.setItem('entries', JSON.stringify(entries));
+      // сбрасываем флаг миграции, чтобы при следующем входе мы снова слить облако в локал (по желанию)
+      localStorage.removeItem('migratedToFirebase');
+
+      // теперь разлогиниваем
+      await signOut(auth);
+    });
+
+    console.log('[Firebase] Module loaded, auth=', auth);
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        avatarImg.src = user.photoURL;
+
+        // --- Всегда мигрируем локальные записи при каждом логине ---
+        const localEntries = JSON.parse(localStorage.getItem('entries') || '[]');
+        if (localEntries.length > 0) {
+          console.log('[Migration] migrating', localEntries.length, 'entries');
+          try {
+            // Параллельно заливаем все записи
+            await Promise.all(
+              localEntries.map(e =>
+                addDoc(collection(db, 'readings'), {
+                  owner: user.uid,
+                  date: e.date,
+                  title: e.title
+                })
+              )
+            );
+            console.log('[Migration] done');
+          } catch (err) {
+            console.error('[Migration] error', err);
+          }
+          // После заливки избавляемся от локала
+          localStorage.removeItem('entries');
+        }
+
+        // Потом уже подключаем слушатель Firestore
+        loadFromFirestore(user.uid);
+
+      } else {
+        avatarImg.src = 'default-U-icon.svg';
+        loadFromLocal();
+      }
+    });
+
+
+
+
+    async function loadFromFirestore(uid) {
+      const q = query(collection(db, 'readings'), where('owner', '==', uid));
+      onSnapshot(q, snapshot => {
+        const notes = [];
+        snapshot.forEach(doc => notes.push({ id: doc.id, ...doc.data() }));
+        entries = notes;
+        renderEntries();
+      });
+    }
+
+    window.addReadingFirebase = async entry => {
+      if (auth.currentUser) {
+        await addDoc(collection(db, 'readings'), {
+          owner: auth.currentUser.uid,
+          date: entry.date,
+          title: entry.title
+        });
+      } else {
+        saveToLocal(entry);
+      }
+    };
+
+    window.removeReadingFirebase = async id => {
+      if (auth.currentUser) {
+        await deleteDoc(doc(db, 'readings', id));
+      } else {
+        removeFromLocal(id);
+      }
+    };
+  </script>
 </body>
+
 </html>
