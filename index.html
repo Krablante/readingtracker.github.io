@@ -13,7 +13,7 @@
       <h1>Reading Tracker</h1>
       <button id="theme-btn" class="theme-btn" aria-label="Toggle theme">🌙</button>
     </div>
-    <form id="entry-form">
+    <form id="entry-form" autocomplete="off">
       <div class="field-group">
         <label for="date" class="visually-hidden">Date</label>
         <input type="date" id="date" required aria-hidden="true" hidden>
@@ -21,7 +21,7 @@
       </div>
       <div class="field-group flex-grow">
         <label for="title" class="visually-hidden">Title</label>
-        <input type="text" id="title" class="title-input" placeholder="Book or article title" required>
+        <input type="text" id="title" class="title-input" placeholder="Book or article title" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       </div>
       <button type="submit" class="submit-btn" aria-label="Add entry">A</button>
     </form>
