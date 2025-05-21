@@ -1,6 +1,10 @@
 // Reading Tracker App v8 with theme toggle
 const form = document.getElementById("entry-form");
 const dateInput = document.getElementById("date");
+
+const today = new Date().toISOString().split("T")[0];
+dateInput.value = today;
+
 const dateBtn = document.getElementById("date-btn");
 const titleInput = document.getElementById("title");
 const entriesList = document.getElementById("entries");
@@ -26,8 +30,7 @@ function updateDateBtn(val) {
   const [year, month, day] = val.split("-");
   dateBtn.textContent = `📅 ${day}.${month}.${year}`;
 }
-const today = new Date().toISOString().substr(0, 10);
-dateInput.value = today;
+
 updateDateBtn(today);
 
 dateBtn.addEventListener("click", () => {
@@ -120,13 +123,15 @@ function renderEntries() {
   });
 }
 
-
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const entry = {
-    date: dateInput.value,
-    title: titleInput.value,
+
+  const entryDate = dateInput.value || today;
+  const entry = { 
+    date: entryDate, 
+    title: titleInput.value 
   };
+  window.saveToLocal(entry);
 
   // если пользователь залогинен — пушим в Firestore
   if (auth.currentUser) {
@@ -137,7 +142,7 @@ form.addEventListener("submit", async (e) => {
   }
 
   // очистка формы
-  form.reset();
+  titleInput.value = "";
 });
 
 renderEntries();
