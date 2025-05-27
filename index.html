@@ -50,12 +50,7 @@
 
     // Your web app's Firebase configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyAltyqMEHW5lF--Z5rDQ_MO5wu8bnajRGY",
-      authDomain: "reading-tracker-288c8.firebaseapp.com",
-      projectId: "reading-tracker-288c8",
-      storageBucket: "reading-tracker-288c8.firebasestorage.app",
-      messagingSenderId: "967353871167",
-      appId: "1:967353871167:web:b5fc7eaa410aa4a9a7818a"
+      //
     };
 
     const app = initializeApp(firebaseConfig);
@@ -78,12 +73,6 @@
     });
 
     signOutBtn.addEventListener('click', async () => {
-      // // записываем текущие entries (они уже синхронизированы из Firestore)
-      // localStorage.setItem('entries', JSON.stringify(entries));
-      // // сбрасываем флаг миграции, чтобы при следующем входе мы снова слить облако в локал (по желанию)
-      // localStorage.removeItem('migratedToFirebase');
-
-      // теперь разлогиниваем
       await signOut(auth);
     });
 
@@ -91,31 +80,6 @@
     onAuthStateChanged(auth, async user => {
       if (user) {
         avatarImg.src = user.photoURL;
-
-        // --- Всегда мигрируем локальные записи при каждом логине ---
-        //const localEntries = JSON.parse(localStorage.getItem('entries') || '[]');
-        /*if (localEntries.length > 0) {
-          console.log('[Migration] migrating', localEntries.length, 'entries');
-          try {
-            // Параллельно заливаем все записи
-            await Promise.all(
-              localEntries.map(e =>
-                addDoc(collection(db, 'readings'), {
-                  owner: user.uid,
-                  date: e.date,
-                  title: e.title
-                })
-              )
-            );
-            console.log('[Migration] done');
-          } catch (err) {
-            console.error('[Migration] error', err);
-          }
-          // После заливки избавляемся от локала
-          localStorage.removeItem('entries');
-        }*/
-
-        // Потом уже подключаем слушатель Firestore
         loadFromFirestore(user.uid);
 
       } else {
@@ -123,9 +87,6 @@
         loadFromLocal();
       }
     });
-
-
-
 
     async function loadFromFirestore(uid) {
       const q = query(collection(db, 'readings'), where('owner', '==', uid));
