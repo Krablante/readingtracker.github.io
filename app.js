@@ -46,17 +46,15 @@ function saveEntries() {
 
 function renderEntries() {
   entriesList.innerHTML = "";
-  // Сортируем по дате (самые новые наверху)
+
   entries.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  // Группируем по дате
   const groups = {};
   entries.forEach((entry) => {
     if (!groups[entry.date]) groups[entry.date] = [];
-    groups[entry.date].push(entry); // теперь это сам объект, не просто title
+    groups[entry.date].push(entry);
   });
 
-  // Рендерим группы
   Object.keys(groups).forEach((date) => {
     const [year, month, day] = date.split("-");
     const formattedDate = `${day}.${month}.${year}`;
@@ -84,7 +82,7 @@ function renderEntries() {
       const btn = document.createElement("button");
       btn.className = "delete-btn";
       btn.textContent = "×";
-      // кладём data-id для облака, и — на всякий случай — date/title для локала
+
       if (entry.id) {
         btn.dataset.id = entry.id;
       }
@@ -99,7 +97,6 @@ function renderEntries() {
     entriesList.appendChild(li);
   });
 
-  // Навешиваем общий обработчик удаления
   document.querySelectorAll(".delete-btn").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
@@ -107,17 +104,14 @@ function renderEntries() {
       const title = btn.dataset.title;
 
       if (window.auth && auth.currentUser && id) {
-        // удаляем из Firestore (внутри removeReadingFirebase есть fallback)
         await removeReadingFirebase(id);
       } else {
-        // локальный режим: фильтруем по дате+заголовку
         entries = entries.filter(
           (e) => !(e.date === date && e.title === title)
         );
         saveEntries();
       }
 
-      // перерисовываем список
       renderEntries();
     });
   });
@@ -133,21 +127,17 @@ form.addEventListener("submit", async (e) => {
   };
   // window.saveToLocal(entry);
 
-  // если пользователь залогинен — пушим в Firestore
   if (auth.currentUser) {
     await addReadingFirebase(entry);
   } else {
-    // иначе — в локал
     saveToLocal(entry);
   }
 
-  // очистка формы
   titleInput.value = "";
 });
 
 renderEntries();
 
-// Service Worker registration
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
@@ -156,22 +146,17 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-// 1) Подгрузить всё из localStorage и отрисовать
 window.loadFromLocal = function () {
   entries = JSON.parse(localStorage.getItem("entries") || "[]");
   renderEntries();
 };
 
-// 2) Добавить одну запись в локал и отрисовать
 window.saveToLocal = function (entry) {
   entries.push(entry);
   saveEntries();
   renderEntries();
 };
 
-// 3) Удалить одну запись в локал и отрисовать
-//    Здесь мы удаляем по индексу;
-//    можно заменить на фильтрацию по date/title, если нужно.
 window.removeFromLocal = function (index) {
   entries.splice(index, 1);
   saveEntries();
